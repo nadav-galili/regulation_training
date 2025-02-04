@@ -16,15 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from "@radix-ui/react-icons";
-import { format } from "date-fns";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   BarChart,
   Bar,
@@ -41,7 +32,23 @@ import {
   Line,
 } from "recharts";
 import { cn } from "@/lib/utils";
+import {
+  Users,
+  CheckCircle2,
+  BarChart3,
+  Activity,
+  Filter,
+  CheckCheck,
+  AlertCircle,
+  Bell,
+} from "lucide-react";
 import { useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Install required components:
 // pnpm dlx shadcn-ui@latest add select popover calendar
@@ -82,6 +89,61 @@ const recentSessions = [
     status: "Passed",
     department: "HR",
   },
+  {
+    id: 4,
+    employee: "Sarah Williams",
+    video: "Customer Service Basics",
+    startTime: "2024-02-10 13:45",
+    duration: "40 mins",
+    correctAnswers: 9,
+    wrongAnswers: 1,
+    status: "Passed",
+    department: "Sales",
+  },
+  {
+    id: 5,
+    employee: "David Chen",
+    video: "Workplace Safety",
+    startTime: "2024-02-10 14:30",
+    duration: "55 mins",
+    correctAnswers: 4,
+    wrongAnswers: 6,
+    status: "Failed",
+    department: "Operations",
+  },
+  {
+    id: 6,
+    employee: "Emily Brown",
+    video: "HR Policies 2024",
+    startTime: "2024-02-10 15:15",
+    duration: "35 mins",
+    correctAnswers: 7,
+    wrongAnswers: 3,
+    status: "Passed",
+    department: "HR",
+  },
+  {
+    id: 7,
+    employee: "Alex Turner",
+    video: "Sales Techniques",
+    startTime: "2024-02-10 16:00",
+    duration: "50 mins",
+    correctAnswers: 6,
+    wrongAnswers: 4,
+    status: "Failed",
+    department: "Sales",
+  },
+  {
+    id: 8,
+    employee: "Maria Garcia",
+    video: "Equipment Safety",
+    startTime: "2024-02-10 16:45",
+    duration: "40 mins",
+    correctAnswers: 9,
+    wrongAnswers: 1,
+    status: "Passed",
+    department: "Operations",
+  },
 ];
 
 const performanceData = [
@@ -104,24 +166,101 @@ const dailyProgress = [
   { date: "02/05", completed: 15 },
 ];
 
+// Add mock notifications data
+const notifications = [
+  {
+    id: 1,
+    title: "Training Completion Alert",
+    message: "5 employees completed Safety Training this week",
+    time: "2 hours ago",
+    unread: true,
+  },
+  {
+    id: 2,
+    title: "Low Performance Warning",
+    message: "3 employees failed Emergency Procedures test",
+    time: "5 hours ago",
+    unread: false,
+  },
+];
+
 export default function AdminDashboard() {
-  const [date, setDate] = useState<Date>();
+  const [selectedDept, setSelectedDept] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState<
+    "all" | "Passed" | "Failed"
+  >("all");
+
+  // Filter data based on department
+  const filteredSessions = recentSessions.filter(
+    (session) =>
+      (selectedDept === "all" || session.department === selectedDept) &&
+      (selectedStatus === "all" || session.status === selectedStatus)
+  );
+
+  // Department stats
+  const deptStats = {
+    all: { employees: 100, completion: 75, pass: 85, active: 12 },
+    operations: { employees: 45, completion: 80, pass: 88, active: 5 },
+    sales: { employees: 30, completion: 70, pass: 82, active: 4 },
+    hr: { employees: 25, completion: 75, pass: 85, active: 3 },
+  };
+
+  const currentStats = deptStats[selectedDept as keyof typeof deptStats];
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4">
+      <header className="border-b bg-gradient-to-r from-primary/10 via-background to-background">
+        <div className="container mx-auto px-4 py-6">
           <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-              <p className="text-muted-foreground">
+            <div className="space-y-1">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                Admin Dashboard
+              </h1>
+              <p className="text-base text-muted-foreground flex items-center gap-2">
+                <Activity className="w-4 h-4 text-primary" />
                 Monitor training progress and performance
               </p>
             </div>
-            <div className="flex gap-4">
-              <Select defaultValue="all">
-                <SelectTrigger className="w-[180px]">
+            <div className="flex gap-4 items-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger className="relative">
+                  <div className="p-2 hover:bg-primary/10 rounded-full transition-colors">
+                    <Bell className="w-5 h-5" />
+                    {notifications.some((n) => n.unread) && (
+                      <div className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
+                    )}
+                  </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-80">
+                  {notifications.map((notification) => (
+                    <DropdownMenuItem
+                      key={notification.id}
+                      className={cn(
+                        "flex flex-col items-start gap-1 p-4",
+                        notification.unread && "bg-primary/5"
+                      )}>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">
+                          {notification.title}
+                        </span>
+                        {notification.unread && (
+                          <span className="w-2 h-2 bg-primary rounded-full" />
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {notification.message}
+                      </p>
+                      <span className="text-xs text-muted-foreground">
+                        {notification.time}
+                      </span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Select defaultValue="all" onValueChange={setSelectedDept}>
+                <SelectTrigger className="w-[180px] border-primary/20">
+                  <Filter className="w-4 h-4 mr-2 text-primary" />
                   <SelectValue placeholder="Department" />
                 </SelectTrigger>
                 <SelectContent>
@@ -131,27 +270,6 @@ export default function AdminDashboard() {
                   <SelectItem value="hr">HR</SelectItem>
                 </SelectContent>
               </Select>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-[180px] justify-start text-left font-normal",
-                      !date && "text-muted-foreground"
-                    )}>
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, "PPP") : "Pick a date"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
             </div>
           </div>
         </div>
@@ -161,25 +279,74 @@ export default function AdminDashboard() {
       <main className="container mx-auto px-4 py-8">
         {/* Stats Overview */}
         <div className="grid gap-6 md:grid-cols-4 mb-8">
-          <Card className="p-6">
-            <h3 className="font-semibold mb-4">Total Employees</h3>
-            <p className="text-3xl font-bold">100</p>
-            <p className="text-muted-foreground">Registered in system</p>
+          <Card className="p-6 border-primary/10 hover:shadow-md transition-all">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-primary/10 rounded-full">
+                <Users className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold mb-1 text-muted-foreground">
+                  Total Employees
+                </h3>
+                <p className="text-3xl font-bold text-primary">
+                  {currentStats.employees}
+                </p>
+              </div>
+            </div>
+            <p className="text-muted-foreground mt-4">Registered in system</p>
           </Card>
-          <Card className="p-6">
-            <h3 className="font-semibold mb-4">Completion Rate</h3>
-            <p className="text-3xl font-bold">75%</p>
-            <p className="text-muted-foreground">Average across all courses</p>
+
+          <Card className="p-6 border-primary/10 hover:shadow-md transition-all">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-primary/10 rounded-full">
+                <CheckCircle2 className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold mb-1 text-muted-foreground">
+                  Completion Rate
+                </h3>
+                <p className="text-3xl font-bold text-primary">
+                  {currentStats.completion}%
+                </p>
+              </div>
+            </div>
+            <p className="text-muted-foreground mt-4">
+              Average across all courses
+            </p>
           </Card>
-          <Card className="p-6">
-            <h3 className="font-semibold mb-4">Pass Rate</h3>
-            <p className="text-3xl font-bold">85%</p>
-            <p className="text-muted-foreground">First attempt success</p>
+
+          <Card className="p-6 border-primary/10 hover:shadow-md transition-all">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-primary/10 rounded-full">
+                <BarChart3 className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold mb-1 text-muted-foreground">
+                  Pass Rate
+                </h3>
+                <p className="text-3xl font-bold text-primary">
+                  {currentStats.pass}%
+                </p>
+              </div>
+            </div>
+            <p className="text-muted-foreground mt-4">First attempt success</p>
           </Card>
-          <Card className="p-6">
-            <h3 className="font-semibold mb-4">Active Sessions</h3>
-            <p className="text-3xl font-bold">12</p>
-            <p className="text-muted-foreground">Currently in progress</p>
+
+          <Card className="p-6 border-primary/10 hover:shadow-md transition-all">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-primary/10 rounded-full">
+                <Activity className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold mb-1 text-muted-foreground">
+                  Active Sessions
+                </h3>
+                <p className="text-3xl font-bold text-primary">
+                  {currentStats.active}
+                </p>
+              </div>
+            </div>
+            <p className="text-muted-foreground mt-4">Currently in progress</p>
           </Card>
         </div>
 
@@ -276,14 +443,19 @@ export default function AdminDashboard() {
         <Card className="p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-semibold">Recent Training Sessions</h3>
-            <Select defaultValue="all">
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by Status" />
+            <Select
+              defaultValue="all"
+              onValueChange={(value: "all" | "Passed" | "Failed") =>
+                setSelectedStatus(value)
+              }>
+              <SelectTrigger className="w-[150px] border-primary/20">
+                <CheckCheck className="w-4 h-4 mr-2 text-primary" />
+                <SelectValue placeholder="Filter Status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="passed">Passed</SelectItem>
-                <SelectItem value="failed">Failed</SelectItem>
+                <SelectItem value="Passed">Passed</SelectItem>
+                <SelectItem value="Failed">Failed</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -301,7 +473,7 @@ export default function AdminDashboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {recentSessions.map((session) => (
+              {filteredSessions.map((session) => (
                 <TableRow key={session.id}>
                   <TableCell>{session.employee}</TableCell>
                   <TableCell>{session.department}</TableCell>
@@ -312,11 +484,17 @@ export default function AdminDashboard() {
                   <TableCell>{session.wrongAnswers}</TableCell>
                   <TableCell>
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      className={cn(
+                        "px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 w-fit",
                         session.status === "Passed"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}>
+                          ? "bg-primary/10 text-primary"
+                          : "bg-destructive/10 text-destructive"
+                      )}>
+                      {session.status === "Passed" ? (
+                        <CheckCheck className="w-3 h-3" />
+                      ) : (
+                        <AlertCircle className="w-3 h-3" />
+                      )}
                       {session.status}
                     </span>
                   </TableCell>
