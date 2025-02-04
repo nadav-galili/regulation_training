@@ -1,86 +1,98 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Card } from "@/components/ui/card";
+import { ShieldCheck } from "lucide-react";
 
 export default function AdminLogin() {
-  const [credentials, setCredentials] = useState({
-    employeeId: "",
-    password: "",
-  });
-  const [error, setError] = useState("");
   const router = useRouter();
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     try {
-      // First check if the employee exists and is an admin
-      const { data, error: queryError } = await supabase
+      const { data, error } = await supabase
         .from("employees")
         .select()
-        .eq("email", credentials.employeeId)
+        .eq("employee_identifier", identifier)
         .eq("is_admin", true)
-        .eq("password", credentials.password)
-        .maybeSingle();
+        .single();
 
-      if (queryError) throw queryError;
-
-      if (!data) {
-        setError("Invalid admin credentials");
-        return;
+      if (error || !data) {
+        throw new Error("Invalid credentials");
       }
 
-      // Store admin data
-      localStorage.setItem("admin", JSON.stringify(data));
-      router.push("/admin/dashboard");
+      // Here you would normally verify the password properly
+      // This is just a basic example
+      if (password === data.password) {
+        localStorage.setItem("admin", JSON.stringify(data));
+        router.push("/admin/dashboard");
+      } else {
+        throw new Error("Invalid credentials");
+      }
     } catch (err) {
-      console.error(err);
-      setError("Failed to verify admin credentials");
+      setError("Invalid identifier or password");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md p-6 space-y-6">
-        <div className="space-y-2 text-center">
-          <h1 className="text-2xl font-bold">Admin Login</h1>
-          <p className="text-muted-foreground">
-            Access the training management dashboard
-          </p>
-        </div>
-
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div className="space-y-2">
-            <Input
-              type="text"
-              placeholder="Admin ID"
-              value={credentials.employeeId}
-              onChange={(e) =>
-                setCredentials({ ...credentials, employeeId: e.target.value })
-              }
-            />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary/20 via-background to-background p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <div className="flex items-center gap-2 mb-2">
+            <ShieldCheck className="w-6 h-6 text-primary" />
+            <CardTitle className="text-2xl font-bold">Admin Login</CardTitle>
           </div>
-          <div className="space-y-2">
-            <Input
-              type="password"
-              placeholder="Password"
-              value={credentials.password}
-              onChange={(e) =>
-                setCredentials({ ...credentials, password: e.target.value })
-              }
-            />
-          </div>
-          {error && <p className="text-sm text-red-500">{error}</p>}
-          <Button type="submit" className="w-full">
-            Login to Dashboard
-          </Button>
-        </form>
+          <CardDescription>
+            Enter your admin credentials to access the dashboard
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="identifier">Employee Identifier</Label>
+              <Input
+                id="identifier"
+                placeholder="Enter your identifier"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            {error && (
+              <p className="text-sm text-destructive text-center">{error}</p>
+            )}
+            <Button type="submit" className="w-full">
+              Login
+            </Button>
+          </form>
+        </CardContent>
       </Card>
     </div>
   );
