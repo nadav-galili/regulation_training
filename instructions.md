@@ -1,4 +1,4 @@
-Below is a complete Product Requirements Document (PRD) designed for a Next.js developer building a B2B web application for employee regulation training. This document outlines the project’s vision, functionality, technical stack, user flows, and a complete Supabase database schema (with SQL queries) to guide your development.
+Below is a complete Product Requirements Document (PRD) designed for a Next.js developer building a B2B web application for employee regulation training. This document outlines the project's vision, functionality, technical stack, user flows, and a complete Supabase database schema (with SQL queries) to guide your development.
 
 Product Requirements Document (PRD)
 
@@ -26,12 +26,12 @@ In Scope:
 • Employee Flow:
 • Login using an ID that is cross-checked with the employees table.
 • Navigate to a tutorial page that loads a video assigned to the employee.
-• Video playback starts in “paused” mode. On pressing “Start,” the video plays until it reaches a preconfigured stopping point.
+• Video playback starts in "paused" mode. On pressing "Start," the video plays until it reaches a preconfigured stopping point.
 • At stopping points, the video pauses and displays a question with multiple answers.
 • Handling of wrong/right answers:
 • Wrong Answer: Shows an alert; if wrong twice, an error toaster appears and the video restarts.
 • Right Answer: The video resumes playback.
-• End-of-video screen with a “Go Home” button.
+• End-of-video screen with a "Go Home" button.
 • Admin Flow:
 • Dashboard to display analytics for all employee sessions (e.g., test start times, duration, answer correctness, restart counts, overall pass/fail status).
 
@@ -69,8 +69,8 @@ Out of Scope:
 • Video Assignment:
 • Upon login, fetch the list of videos associated with the employee from the many-to-many relationship between employees and videos.
 • Video Behavior:
-• Initial State: Video is in “stop mode” (paused).
-• Start Playback: Employee presses a “Start” button.
+• Initial State: Video is in "stop mode" (paused).
+• Start Playback: Employee presses a "Start" button.
 • Stop Points:
 • The video pauses at pre-configured stopping points defined in the video_stopping_points table.
 • When a stop is reached, fetch the associated question (and its answers) from the questions and answers tables.
@@ -81,11 +81,11 @@ Out of Scope:
 • On Wrong Answer (Second Attempt):
 • Show an error toaster notification.
 • Restart the video from the beginning.
-• Log a “restart” event.
+• Log a "restart" event.
 • On Correct Answer:
 • Resume video playback automatically.
 • Completion:
-• At the end of the video, display a “Go Home” button to navigate back to the landing page.
+• At the end of the video, display a "Go Home" button to navigate back to the landing page.
 • Analytics Tracking:
 • Log session details such as start time, end time, duration, correct/incorrect answers, and number of restarts (stored in the test_sessions and question_responses tables).
 
@@ -139,7 +139,7 @@ Out of Scope:
 
 7. UI/UX Design Guidelines
    • Consistent Branding:
-   • Align with the company’s branding and design standards.
+   • Align with the company's branding and design standards.
    • Responsive Design:
    • Ensure the web app works across desktop, tablet, and mobile devices.
    • User Feedback:
@@ -152,7 +152,7 @@ Out of Scope:
 8. Data Flow & Architecture
 
    1. Landing Page:
-      • User lands on the home screen and selects either “Employee Login” or “Admin Dashboard.”
+      • User lands on the home screen and selects either "Employee Login" or "Admin Dashboard."
    2. Employee Login Flow:
       • Employee enters their ID.
       • Frontend calls Supabase to validate the ID against the employees table.
@@ -181,11 +181,11 @@ id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 employee_identifier VARCHAR(255) UNIQUE NOT NULL, -- The ID used for login
 name VARCHAR(255) NOT NULL,
 email VARCHAR(255) UNIQUE,
-created_at TIMESTAMP DEFAULT NOW()
+created_at TIMESTAMP DEFAULT NOW(),
+password VARCHAR(255)
 );
 
 9.2. Videos Table
-
 CREATE TABLE IF NOT EXISTS videos (
 id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 title VARCHAR(255) NOT NULL,
@@ -212,7 +212,7 @@ CREATE TABLE IF NOT EXISTS video_stopping_points (
 id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 video_id UUID NOT NULL,
 stop_time_seconds INT NOT NULL, -- The time (in seconds) when the video should pause
-order_index INT, -- Optional: to define order if multiple stops occur at the same time
+order_index INT, -- Defines order if multiple stops occur at the same time
 created_at TIMESTAMP DEFAULT NOW(),
 FOREIGN KEY (video_id) REFERENCES videos(id) ON DELETE CASCADE
 );
@@ -246,7 +246,7 @@ employee_id UUID NOT NULL,
 video_id UUID NOT NULL,
 started_at TIMESTAMP DEFAULT NOW(),
 ended_at TIMESTAMP,
-total_duration INT, -- in seconds
+total_duration INT, -- Time spent (in seconds)
 right_count INT DEFAULT 0,
 wrong_count INT DEFAULT 0,
 restart_count INT DEFAULT 0,
@@ -262,9 +262,9 @@ CREATE TABLE IF NOT EXISTS question_responses (
 id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 test_session_id UUID NOT NULL,
 question_id UUID NOT NULL,
-answer_id UUID, -- The answer selected (can be NULL if no selection)
+answer_id UUID, -- Selected answer (nullable if unanswered)
 is_correct BOOLEAN,
-attempt_number INT DEFAULT 1,
+attempt_number INT DEFAULT 1, -- Tracks number of attempts per question
 responded_at TIMESTAMP DEFAULT NOW(),
 FOREIGN KEY (test_session_id) REFERENCES test_sessions(id) ON DELETE CASCADE,
 FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE,
@@ -272,17 +272,66 @@ FOREIGN KEY (answer_id) REFERENCES answers(id) ON DELETE SET NULL
 );
 
 9.9. Indexes (Example Indexes for performance)
-
--- Index on employee_videos for faster join queries
+-- Index for faster lookups on employee_videos
 CREATE INDEX IF NOT EXISTS idx_employee_videos_employee_id ON employee_videos(employee_id);
 
--- Index on video_stopping_points to quickly retrieve stops for a video
+-- Index to speed up retrieving stopping points for a video
 CREATE INDEX IF NOT EXISTS idx_video_stopping_points_video_id ON video_stopping_points(video_id);
 
--- Index on test_sessions to speed up queries by employee
+-- Index to speed up employee test session queries
 CREATE INDEX IF NOT EXISTS idx_test_sessions_employee_id ON test_sessions(employee_id);
 
-10. API Endpoints (Conceptual)
+ALTER TABLE employees ENABLE ROW LEVEL SECURITY;
+ALTER TABLE employee_videos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE test_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE question_responses ENABLE ROW LEVEL SECURITY;
+
+-- Drop the existing policy if it exists
+DROP POLICY IF EXISTS "Employees can read their own data" ON employees;
+
+-- Create a new policy that allows reading the employees table
+CREATE POLICY "Allow reading employees table"
+ON employees
+FOR SELECT
+TO anon
+USING (true);
+
+-- Employees can create test sessions for their training
+CREATE POLICY "Employees can insert test sessions"
+ON test_sessions
+FOR INSERT
+WITH CHECK (auth.uid() = employee_id);
+
+-- Employees can read their own test sessions
+CREATE POLICY "Employees can read their own test sessions"
+ON test_sessions
+FOR SELECT
+USING (auth.uid() = employee_id);
+
+    -- Employees can insert their own question responses
+
+CREATE POLICY "Employees can insert question responses"
+ON question_responses
+FOR INSERT
+WITH CHECK (auth.uid() = (SELECT employee_id FROM test_sessions WHERE test_sessions.id = test_session_id));
+
+-- Employees can read their own question responses
+CREATE POLICY "Employees can read their own question responses"
+ON question_responses
+FOR SELECT
+USING (auth.uid() = (SELECT employee_id FROM test_sessions WHERE test_sessions.id = test_session_id));
+
+    -- Admins can read all test sessions and question responses
+
+CREATE POLICY "Admins can read all test sessions"
+ON test_sessions
+FOR SELECT
+USING (EXISTS (SELECT 1 FROM employees WHERE employees.id = auth.uid() AND employees.employee_identifier = 'admin'));
+
+CREATE POLICY "Admins can read all question responses"
+ON question_responses
+FOR SELECT
+USING (EXISTS (SELECT 1 FROM employees WHERE employees.id = auth.uid() AND employees.employee_identifier = 'admin')); 10. API Endpoints (Conceptual)
 
 While the exact endpoints will be implemented within Next.js API routes and through the Supabase client, here is an outline of the API interactions:
 • Authentication & Employee Verification:
@@ -336,3 +385,16 @@ This PRD outlines the complete vision for building an interactive regulation tra
 By following this document, the development team will be well-equipped to implement the project with clear guidance on both front-end and back-end components, ensuring a secure, responsive, and engaging user experience.
 
 Feel free to ask if you have any questions or need further clarifications on any part of this PRD!
+
+-- Add password column to employees table
+ALTER TABLE employees ADD COLUMN IF NOT EXISTS password VARCHAR(255);
+
+-- Update your admin user with both is_admin and password
+UPDATE employees
+SET
+is_admin = TRUE,
+password = 'admin123'
+WHERE employee_identifier = '1234';
+
+-- Verify the changes
+SELECT \* FROM employees WHERE employee_identifier = '1234';
