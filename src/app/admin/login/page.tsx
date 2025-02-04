@@ -45,9 +45,11 @@ export default function AdminLogin() {
       } else {
         throw new Error("Invalid credentials");
       }
-    } catch (err: any) {
+    } catch (err) {
       setError("Invalid identifier or password");
-      console.error(err.message);
+      if (err instanceof Error) {
+        console.error(err.message);
+      }
     }
   };
 
