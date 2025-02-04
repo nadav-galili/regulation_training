@@ -7,6 +7,13 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import {
+  PlayCircle,
+  PauseCircle,
+  LogOut,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
 
 type Video = {
   id: string;
@@ -217,13 +224,16 @@ export default function TutorialPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+      {/* Header with gradient */}
+      <header className="border-b bg-gradient-to-r from-primary/10 via-background to-background">
+        <div className="container mx-auto px-4 py-6 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold">Training Portal</h1>
+            <h1 className="text-2xl font-bold text-primary">Training Portal</h1>
             {employee && (
-              <p className="text-muted-foreground">Welcome, {employee.name}</p>
+              <p className="text-muted-foreground flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-primary" />
+                Welcome, {employee.name}
+              </p>
             )}
           </div>
           <Button
@@ -231,7 +241,9 @@ export default function TutorialPage() {
             onClick={() => {
               localStorage.removeItem("employee");
               router.push("/");
-            }}>
+            }}
+            className="hover:text-primary flex items-center gap-2">
+            <LogOut className="w-4 h-4" />
             Logout
           </Button>
         </div>
@@ -239,9 +251,9 @@ export default function TutorialPage() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <Card className="max-w-4xl mx-auto p-6">
+        <Card className="max-w-4xl mx-auto p-6 shadow-lg border-primary/10">
           {/* Video Player Section */}
-          <div className="aspect-video bg-muted rounded-lg mb-6 flex items-center justify-center">
+          <div className="aspect-video bg-muted rounded-lg mb-6 flex items-center justify-center overflow-hidden">
             {currentVideo ? (
               <video
                 ref={videoRef}
@@ -250,26 +262,40 @@ export default function TutorialPage() {
                 onTimeUpdate={handleTimeUpdate}
               />
             ) : (
-              <p className="text-muted-foreground">Loading video...</p>
+              <div className="flex flex-col items-center text-muted-foreground">
+                <PlayCircle className="w-12 h-12 mb-2 animate-pulse" />
+                <p>Loading video...</p>
+              </div>
             )}
           </div>
 
           {/* Controls Section */}
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">
+              <h2 className="text-xl font-semibold text-primary">
                 {currentVideo?.title || "Loading..."}
               </h2>
               <Button
                 size="lg"
                 onClick={handleStartVideo}
-                disabled={!currentVideo || isPlaying || showQuestion}>
-                {isPlaying ? "Playing..." : "Start Video"}
+                disabled={!currentVideo || isPlaying || showQuestion}
+                className="flex items-center gap-2">
+                {isPlaying ? (
+                  <>
+                    <PauseCircle className="w-5 h-5" />
+                    Playing...
+                  </>
+                ) : (
+                  <>
+                    <PlayCircle className="w-5 h-5" />
+                    Start Video
+                  </>
+                )}
               </Button>
             </div>
 
             {/* Progress Indicator */}
-            <div className="h-2 bg-muted rounded-full">
+            <div className="h-2 bg-secondary rounded-full">
               <div
                 className="h-full bg-primary rounded-full transition-all duration-300"
                 style={{
@@ -286,8 +312,8 @@ export default function TutorialPage() {
 
             {/* Question Section */}
             <div className={showQuestion ? "block" : "hidden"}>
-              <Card className="p-4 mt-4">
-                <h3 className="text-lg font-medium mb-4">
+              <Card className="p-6 mt-4 border-primary/10 shadow-md">
+                <h3 className="text-lg font-medium mb-4 text-primary">
                   {currentQuestion?.question_text}
                 </h3>
                 <div className="space-y-2">
@@ -295,12 +321,17 @@ export default function TutorialPage() {
                     <Button
                       key={answer.id}
                       className={cn(
-                        "w-full justify-start",
+                        "w-full justify-start gap-2",
                         lastWrongAnswer === answer.id &&
                           "bg-red-500/10 border-red-500/50"
                       )}
                       variant="outline"
                       onClick={() => handleAnswer(answer)}>
+                      {lastWrongAnswer === answer.id ? (
+                        <XCircle className="w-4 h-4 text-red-500" />
+                      ) : (
+                        <CheckCircle className="w-4 h-4 text-primary/50" />
+                      )}
                       {answer.answer_text}
                     </Button>
                   ))}
