@@ -2,9 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 type Video = {
   id: string;
@@ -31,34 +33,35 @@ type Answer = {
   is_correct: boolean;
 };
 
+type Employee = {
+  id: string;
+  name: string;
+};
+
+type AnswerAttempt = {
+  questionId: string;
+  attempts: number;
+};
+
 export default function TutorialPage() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [employee, setEmployee] = useState<any>(null);
+  const [employee, setEmployee] = useState<Employee | null>(null);
   const [currentVideo, setCurrentVideo] = useState<Video | null>(null);
   const [stoppingPoints, setStoppingPoints] = useState<StoppingPoint[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [showQuestion, setShowQuestion] = useState(false);
+  const { toast } = useToast();
+  const [wrongAttempts, setWrongAttempts] = useState<AnswerAttempt[]>([]);
+  const [lastWrongAnswer, setLastWrongAnswer] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Get employee data from localStorage
-    const storedEmployee = localStorage.getItem("employee");
-    if (!storedEmployee) {
-      router.push("/employee/login");
-      return;
-    }
-    setEmployee(JSON.parse(storedEmployee));
-  }, [router]);
-
-  useEffect(() => {
-    if (employee?.id) {
-      fetchAssignedVideo();
-    }
-  }, [employee]);
-
-  const fetchAssignedVideo = async () => {
+  const fetchAssignedVideo = useCallback(async () => {
     try {
+      if (!employee) {
+        console.error("Employee is not set");
+        return;
+      }
       console.log("Fetching video for employee:", employee.id);
 
       // Then check the employee_videos assignments with proper join
@@ -100,7 +103,23 @@ export default function TutorialPage() {
     } catch (err) {
       console.error("Error fetching video:", err);
     }
-  };
+  }, [employee]);
+
+  useEffect(() => {
+    // Get employee data from localStorage
+    const storedEmployee = localStorage.getItem("employee");
+    if (!storedEmployee) {
+      router.push("/employee/login");
+      return;
+    }
+    setEmployee(JSON.parse(storedEmployee));
+  }, [router]);
+
+  useEffect(() => {
+    if (employee?.id) {
+      fetchAssignedVideo();
+    }
+  }, [employee, fetchAssignedVideo]);
 
   const fetchQuestionForStopPoint = async (stopPointId: string) => {
     try {
@@ -154,18 +173,45 @@ export default function TutorialPage() {
 
   const handleAnswer = (answer: Answer) => {
     if (answer.is_correct) {
+      toast({
+        title: "Correct!",
+        description: "Good job! Continuing with the video...",
+        variant: "default",
+      });
+      setLastWrongAnswer(null);
       setShowQuestion(false);
+      setWrongAttempts([]);
       if (videoRef.current) {
         videoRef.current.play();
         setIsPlaying(true);
+        videoRef.current.currentTime += 1;
       }
     } else {
-      // On second wrong answer, restart video
-      // TODO: Implement attempt tracking
-      videoRef.current?.load();
-      videoRef.current?.pause();
-      setIsPlaying(false);
-      setShowQuestion(false);
+      const currentAttempts =
+        wrongAttempts.find((a) => a.questionId === currentQuestion?.id)
+          ?.attempts ?? 0;
+
+      if (currentAttempts === 0) {
+        setLastWrongAnswer(answer.id);
+        setWrongAttempts([
+          ...wrongAttempts.filter((a) => a.questionId !== currentQuestion?.id),
+          { questionId: currentQuestion?.id ?? "", attempts: 1 },
+        ]);
+      } else {
+        toast({
+          title: "Incorrect",
+          description: "The video will restart from the beginning.",
+          variant: "destructive",
+        });
+        setLastWrongAnswer(null);
+        if (videoRef.current) {
+          videoRef.current.currentTime = 0;
+          videoRef.current.pause();
+          setIsPlaying(false);
+          setShowQuestion(false);
+          setWrongAttempts([]);
+        }
+      }
     }
   };
 
@@ -217,7 +263,7 @@ export default function TutorialPage() {
               <Button
                 size="lg"
                 onClick={handleStartVideo}
-                disabled={!currentVideo || isPlaying}>
+                disabled={!currentVideo || isPlaying || showQuestion}>
                 {isPlaying ? "Playing..." : "Start Video"}
               </Button>
             </div>
@@ -248,7 +294,11 @@ export default function TutorialPage() {
                   {currentQuestion?.answers.map((answer) => (
                     <Button
                       key={answer.id}
-                      className="w-full justify-start"
+                      className={cn(
+                        "w-full justify-start",
+                        lastWrongAnswer === answer.id &&
+                          "bg-red-500/10 border-red-500/50"
+                      )}
                       variant="outline"
                       onClick={() => handleAnswer(answer)}>
                       {answer.answer_text}

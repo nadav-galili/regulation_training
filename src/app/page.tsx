@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { AnimatedGradientDemo } from "@/components/ui/code-demo";
 import Link from "next/link";
 
 export default function Home() {
@@ -22,6 +23,13 @@ export default function Home() {
           </div>
         </div>
       </header>
+
+      {/* Stats Section */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <AnimatedGradientDemo />
+        </div>
+      </section>
 
       {/* Entry Points with subtle animation */}
       <main className="flex-1 container mx-auto px-4 py-16">
