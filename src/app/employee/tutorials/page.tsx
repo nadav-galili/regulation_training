@@ -13,6 +13,7 @@ import {
   LogOut,
   CheckCircle,
   XCircle,
+  Clock,
 } from "lucide-react";
 
 type Video = {
@@ -62,6 +63,8 @@ export default function TutorialPage() {
   const { toast } = useToast();
   const [wrongAttempts, setWrongAttempts] = useState<AnswerAttempt[]>([]);
   const [lastWrongAnswer, setLastWrongAnswer] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState<number>(0);
+  const [duration, setDuration] = useState<number>(0);
 
   const fetchAssignedVideo = useCallback(async () => {
     try {
@@ -163,10 +166,19 @@ export default function TutorialPage() {
     }
   };
 
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? "0" + secs : secs}`;
+  };
+
   const handleTimeUpdate = () => {
     if (!videoRef.current) return;
 
-    const currentTime = Math.floor(videoRef.current.currentTime);
+    const currentTimeValue = videoRef.current.currentTime;
+    setCurrentTime(currentTimeValue);
+
+    const currentTime = Math.floor(currentTimeValue);
     const stopPoint = stoppingPoints.find(
       (p) => p.stop_time_seconds === currentTime
     );
@@ -178,11 +190,17 @@ export default function TutorialPage() {
     }
   };
 
+  const handleVideoLoaded = () => {
+    if (videoRef.current) {
+      setDuration(videoRef.current.duration);
+    }
+  };
+
   const handleAnswer = (answer: Answer) => {
     if (answer.is_correct) {
       toast({
-        title: "Correct!",
-        description: "Good job! Continuing with the video...",
+        title: "נכון מאוד!",
+        description: "מצוין! ממשיכים בסרטון...",
         variant: "default",
       });
       setLastWrongAnswer(null);
@@ -206,18 +224,22 @@ export default function TutorialPage() {
         ]);
       } else {
         toast({
-          title: "Incorrect",
-          description: "The video will restart from the beginning.",
+          title: "לא נכון",
+          description: "הסרטון יחזור להתחלה.",
           variant: "destructive",
         });
         setLastWrongAnswer(null);
-        if (videoRef.current) {
-          videoRef.current.currentTime = 0;
-          videoRef.current.pause();
-          setIsPlaying(false);
-          setShowQuestion(false);
-          setWrongAttempts([]);
-        }
+
+        // Add a slight delay before resetting the video
+        setTimeout(() => {
+          if (videoRef.current) {
+            videoRef.current.currentTime = 0;
+            videoRef.current.pause();
+            setIsPlaying(false);
+            setShowQuestion(false);
+            setWrongAttempts([]);
+          }
+        }, 1500); // 1.5 second delay
       }
     }
   };
@@ -228,11 +250,11 @@ export default function TutorialPage() {
       <header className="border-b bg-gradient-to-r from-primary/10 via-background to-background">
         <div className="container mx-auto px-4 py-6 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-primary">Training Portal</h1>
+            <h1 className="text-2xl font-bold text-primary">פורטל ההדרכות</h1>
             {employee && (
               <p className="text-muted-foreground flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-primary" />
-                Welcome, {employee.name}
+                ברוך הבא, {employee.name}
               </p>
             )}
           </div>
@@ -244,7 +266,7 @@ export default function TutorialPage() {
             }}
             className="hover:text-primary flex items-center gap-2">
             <LogOut className="w-4 h-4" />
-            Logout
+            התנתק
           </Button>
         </div>
       </header>
@@ -255,12 +277,32 @@ export default function TutorialPage() {
           {/* Video Player Section */}
           <div className="aspect-video bg-muted rounded-lg mb-6 flex items-center justify-center overflow-hidden">
             {currentVideo ? (
-              <video
-                ref={videoRef}
-                src={currentVideo.video_url}
-                className="w-full h-full rounded-lg"
-                onTimeUpdate={handleTimeUpdate}
-              />
+              <div className="relative w-full h-full">
+                <video
+                  ref={videoRef}
+                  src={currentVideo.video_url}
+                  className="w-full h-full rounded-lg"
+                  onTimeUpdate={handleTimeUpdate}
+                  onLoadedMetadata={handleVideoLoaded}
+                  onClick={(e) => e.preventDefault()}
+                  onContextMenu={(e) => e.preventDefault()}
+                  controlsList="nodownload"
+                  disablePictureInPicture
+                />
+                <div
+                  className="absolute top-0 left-0 w-full h-full"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (isPlaying) {
+                      videoRef.current?.pause();
+                      setIsPlaying(false);
+                    } else if (!showQuestion) {
+                      videoRef.current?.play();
+                      setIsPlaying(true);
+                    }
+                  }}
+                />
+              </div>
             ) : (
               <div className="flex flex-col items-center text-muted-foreground">
                 <PlayCircle className="w-12 h-12 mb-2 animate-pulse" />
@@ -308,6 +350,14 @@ export default function TutorialPage() {
                     : "0%",
                 }}
               />
+            </div>
+
+            {/* Time Display */}
+            <div className="flex items-center justify-end text-sm text-muted-foreground mt-1">
+              <Clock className="w-4 h-4 mr-1" />
+              <span>
+                {formatTime(currentTime)} / {formatTime(duration)}
+              </span>
             </div>
 
             {/* Question Section */}

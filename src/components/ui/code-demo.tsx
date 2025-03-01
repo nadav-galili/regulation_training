@@ -73,32 +73,32 @@ const AnimatedGradientDemo: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 grow h-full">
         <div className="md:col-span-2">
           <BentoCard
-            title="Total Employees"
+            title="מספר המשתמשים"
             value="1,234"
-            subtitle="15% increase from last month"
+            subtitle="15% עלייה מהחודש הקודם"
             colors={["#3B82F6", "#60A5FA", "#93C5FD"]}
             delay={0.2}
           />
         </div>
         <BentoCard
-          title="Active Sessions"
+          title="מספר הפעילויות"
           value={42}
-          subtitle="Currently in training"
+          subtitle="כעת בהדרכה"
           colors={["#60A5FA", "#34D399", "#93C5FD"]}
           delay={0.4}
         />
         <BentoCard
-          title="Completion Rate"
+          title="שיעור ההשלמה"
           value="85%"
-          subtitle="0.5% increase from last week"
+          subtitle="0.5% עלייה מהשבוע הקודם"
           colors={["#F59E0B", "#A78BFA", "#FCD34D"]}
           delay={0.6}
         />
         <div className="md:col-span-2">
           <BentoCard
-            title="Passed Tests"
+            title="מספר המבחנים שעברו"
             value={789}
-            subtitle="This month"
+            subtitle="החודש האחרון"
             colors={["#3B82F6", "#A78BFA", "#FBCFE8"]}
             delay={0.8}
           />

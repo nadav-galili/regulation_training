@@ -49,7 +49,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Home } from "lucide-react";
 // Install required components:
 // pnpm dlx shadcn-ui@latest add select popover calendar
 // pnpm add date-fns
@@ -58,104 +60,104 @@ import {
 const recentSessions = [
   {
     id: 1,
-    employee: "John Doe",
-    video: "Safety Protocols 2024",
+    employee: "ישראל ישראלי",
+    video: "הדרכת חוק המזון",
     startTime: "2024-02-10 09:30",
-    duration: "45 mins",
+    duration: "45 דקות",
     correctAnswers: 8,
     wrongAnswers: 2,
-    status: "Passed",
-    department: "Operations",
+    status: "עבר",
+    department: "מחלקת סחר",
   },
   {
     id: 2,
-    employee: "Jane Smith",
-    video: "Emergency Procedures",
+    employee: "מיכל מיכלי",
+    video: "הדרכת בטיחות",
     startTime: "2024-02-10 10:15",
-    duration: "30 mins",
+    duration: "30 דקות",
     correctAnswers: 5,
     wrongAnswers: 5,
-    status: "Failed",
-    department: "Sales",
+    status: "עבר",
+    department: "מחלקת מכירות",
   },
   {
     id: 3,
-    employee: "Mike Johnson",
-    video: "Compliance Training",
+    employee: "אבי לוי",
+    video: "הדרכת מלגזה",
     startTime: "2024-02-10 11:00",
-    duration: "60 mins",
+    duration: "60 דקות",
     correctAnswers: 10,
     wrongAnswers: 0,
-    status: "Passed",
-    department: "HR",
+    status: "עבר",
+    department: "מחלקת משאבי אנוש",
   },
   {
     id: 4,
-    employee: "Sarah Williams",
-    video: "Customer Service Basics",
+    employee: "שרה וילינסון",
+    video: "הדרכת בטיחות",
     startTime: "2024-02-10 13:45",
-    duration: "40 mins",
+    duration: "40 דקות",
     correctAnswers: 9,
     wrongAnswers: 1,
-    status: "Passed",
-    department: "Sales",
+    status: "נכשל",
+    department: "מחלקת מכירות",
   },
   {
     id: 5,
-    employee: "David Chen",
-    video: "Workplace Safety",
+    employee: "דוד כהן",
+    video: "הדרכת בטיחות",
     startTime: "2024-02-10 14:30",
-    duration: "55 mins",
+    duration: "55 דקות",
     correctAnswers: 4,
     wrongAnswers: 6,
-    status: "Failed",
-    department: "Operations",
+    status: "נכשל",
+    department: "מחלקת משאבי אנוש",
   },
   {
     id: 6,
-    employee: "Emily Brown",
-    video: "HR Policies 2024",
+    employee: "אלטה בן רחמים",
+    video: "הדרכת בטיחות",
     startTime: "2024-02-10 15:15",
-    duration: "35 mins",
+    duration: "35 דקות",
     correctAnswers: 7,
     wrongAnswers: 3,
-    status: "Passed",
-    department: "HR",
+    status: "עבר",
+    department: "מחלקת מכירות",
   },
   {
     id: 7,
-    employee: "Alex Turner",
-    video: "Sales Techniques",
+    employee: "אלטה בן רחמים",
+    video: "הדרכת בטיחות",
     startTime: "2024-02-10 16:00",
-    duration: "50 mins",
+    duration: "50 דקות",
     correctAnswers: 6,
     wrongAnswers: 4,
-    status: "Failed",
-    department: "Sales",
+    status: "נכשל",
+    department: "מחלקת מכירות",
   },
   {
     id: 8,
-    employee: "Maria Garcia",
-    video: "Equipment Safety",
+    employee: "מרים גארסיה",
+    video: "הדרכת בטיחות",
     startTime: "2024-02-10 16:45",
-    duration: "40 mins",
+    duration: "40 דקות",
     correctAnswers: 9,
     wrongAnswers: 1,
-    status: "Passed",
-    department: "Operations",
+    status: "עבר",
+    department: "מחלקת משאבי אנוש",
   },
 ];
 
 const performanceData = [
-  { name: "Safety Protocols", passed: 25, failed: 5 },
-  { name: "Emergency Procedures", passed: 20, failed: 8 },
-  { name: "Compliance Training", passed: 30, failed: 2 },
+  { name: "הדרכת חוק המזון", passed: 25, failed: 5 },
+  { name: "הדרכת בטיחות", passed: 20, failed: 8 },
+  { name: "הדרכת מלגזה", passed: 30, failed: 2 },
 ];
 
 const completionStats = [
-  { name: "Completed", value: 75, color: "#22c55e" },
-  { name: "In Progress", value: 15, color: "#eab308" },
-  { name: "Not Started", value: 10, color: "#ef4444" },
+  { name: "הושלמו", value: 75, color: "#22c55e" },
+  { name: "בתהליך", value: 15, color: "#eab308" },
+  { name: "לא התחיל", value: 10, color: "#ef4444" },
 ];
 
 const dailyProgress = [
@@ -186,9 +188,9 @@ const notifications = [
 
 export default function AdminDashboard() {
   const [selectedDept, setSelectedDept] = useState("all");
-  const [selectedStatus, setSelectedStatus] = useState<
-    "all" | "Passed" | "Failed"
-  >("all");
+  const [selectedStatus, setSelectedStatus] = useState<"all" | "עבר" | "נכשל">(
+    "all"
+  );
 
   // Filter data based on department
   const filteredSessions = recentSessions.filter(
@@ -215,13 +217,20 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-center">
             <div className="space-y-1">
               <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                Admin Dashboard
+                פורטל המנהלים
               </h1>
               <p className="text-base text-muted-foreground flex items-center gap-2">
                 <Activity className="w-4 h-4 text-primary" />
-                Monitor training progress and performance
+                עקוב אחר התהליך והגבלת הדרכות של המשתמשים
               </p>
             </div>
+            {/* home button */}
+            <Link href="/">
+              <Button variant="outline">
+                <Home className="w-4 h-4" />
+                דף הבית
+              </Button>
+            </Link>
             <div className="flex gap-4 items-center">
               <DropdownMenu>
                 <DropdownMenuTrigger className="relative">
@@ -264,10 +273,10 @@ export default function AdminDashboard() {
                   <SelectValue placeholder="Department" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Departments</SelectItem>
-                  <SelectItem value="operations">Operations</SelectItem>
-                  <SelectItem value="sales">Sales</SelectItem>
-                  <SelectItem value="hr">HR</SelectItem>
+                  <SelectItem value="all">כל המחלקות</SelectItem>
+                  <SelectItem value="operations">מחלקת סחר</SelectItem>
+                  <SelectItem value="sales">מחלקת מכירות</SelectItem>
+                  <SelectItem value="hr">מחלקת משאבי אנוש</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -286,14 +295,14 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <h3 className="font-semibold mb-1 text-muted-foreground">
-                  Total Employees
+                  סה״כ עובדים{" "}
                 </h3>
                 <p className="text-3xl font-bold text-primary">
                   {currentStats.employees}
                 </p>
               </div>
             </div>
-            <p className="text-muted-foreground mt-4">Registered in system</p>
+            <p className="text-muted-foreground mt-4">משתמשים רשומים במערכת</p>
           </Card>
 
           <Card className="p-6 border-primary/10 hover:shadow-md transition-all">
@@ -303,16 +312,14 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <h3 className="font-semibold mb-1 text-muted-foreground">
-                  Completion Rate
+                  שיעור ההשלמה
                 </h3>
                 <p className="text-3xl font-bold text-primary">
                   {currentStats.completion}%
                 </p>
               </div>
             </div>
-            <p className="text-muted-foreground mt-4">
-              Average across all courses
-            </p>
+            <p className="text-muted-foreground mt-4">ממוצע בכל ההדרכות</p>
           </Card>
 
           <Card className="p-6 border-primary/10 hover:shadow-md transition-all">
@@ -322,14 +329,14 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <h3 className="font-semibold mb-1 text-muted-foreground">
-                  Pass Rate
+                  מספר המבחנים שעברו
                 </h3>
                 <p className="text-3xl font-bold text-primary">
                   {currentStats.pass}%
                 </p>
               </div>
             </div>
-            <p className="text-muted-foreground mt-4">First attempt success</p>
+            <p className="text-muted-foreground mt-4">הצלחה בפעם הראשונה</p>
           </Card>
 
           <Card className="p-6 border-primary/10 hover:shadow-md transition-all">
@@ -339,14 +346,14 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <h3 className="font-semibold mb-1 text-muted-foreground">
-                  Active Sessions
+                  מבחנים המתבצעים כעת{" "}
                 </h3>
                 <p className="text-3xl font-bold text-primary">
                   {currentStats.active}
                 </p>
               </div>
             </div>
-            <p className="text-muted-foreground mt-4">Currently in progress</p>
+            <p className="text-muted-foreground mt-4">מבחנים בתהליך</p>
           </Card>
         </div>
 
@@ -354,7 +361,7 @@ export default function AdminDashboard() {
         <div className="grid gap-6 md:grid-cols-2 mb-8">
           {/* Performance by Course */}
           <Card className="p-6">
-            <h3 className="font-semibold mb-4">Performance by Course</h3>
+            <h3 className="font-semibold mb-4">ביצוע על פי הדרכה</h3>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={performanceData}>
@@ -363,8 +370,8 @@ export default function AdminDashboard() {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="passed" fill="#22c55e" name="Passed" />
-                  <Bar dataKey="failed" fill="#ef4444" name="Failed" />
+                  <Bar dataKey="passed" fill="#22c55e" name="עבר" />
+                  <Bar dataKey="failed" fill="#ef4444" name="נכשל" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -372,7 +379,7 @@ export default function AdminDashboard() {
 
           {/* Daily Progress */}
           <Card className="p-6">
-            <h3 className="font-semibold mb-4">Daily Completion Trend</h3>
+            <h3 className="font-semibold mb-4">טרנד השלמת מבחנים יומי</h3>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={dailyProgress}>
@@ -385,7 +392,7 @@ export default function AdminDashboard() {
                     type="monotone"
                     dataKey="completed"
                     stroke="#2563eb"
-                    name="Completed Trainings"
+                    name="הדרכות שהושלמו"
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -394,7 +401,7 @@ export default function AdminDashboard() {
 
           {/* Completion Status */}
           <Card className="p-6">
-            <h3 className="font-semibold mb-4">Overall Completion Status</h3>
+            <h3 className="font-semibold mb-4">סטטוס השלמת הדרכות</h3>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -419,7 +426,7 @@ export default function AdminDashboard() {
 
           {/* Department Performance */}
           <Card className="p-6">
-            <h3 className="font-semibold mb-4">Department Performance</h3>
+            <h3 className="font-semibold mb-4">ביצועי מחלקות</h3>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
@@ -442,10 +449,10 @@ export default function AdminDashboard() {
         {/* Recent Sessions Table */}
         <Card className="p-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold">Recent Training Sessions</h3>
+            <h3 className="font-semibold">הדרכות שהושלמו </h3>
             <Select
               defaultValue="all"
-              onValueChange={(value: "all" | "Passed" | "Failed") =>
+              onValueChange={(value: "all" | "עבר" | "נכשל") =>
                 setSelectedStatus(value)
               }>
               <SelectTrigger className="w-[150px] border-primary/20">
@@ -453,23 +460,23 @@ export default function AdminDashboard() {
                 <SelectValue placeholder="Filter Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="Passed">Passed</SelectItem>
-                <SelectItem value="Failed">Failed</SelectItem>
+                <SelectItem value="all">כל המצבים</SelectItem>
+                <SelectItem value="עבר">עבר</SelectItem>
+                <SelectItem value="נכשל">נכשל</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Employee</TableHead>
-                <TableHead>Department</TableHead>
-                <TableHead>Video</TableHead>
-                <TableHead>Start Time</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Correct</TableHead>
-                <TableHead>Wrong</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>עובד</TableHead>
+                <TableHead>מחלקה</TableHead>
+                <TableHead>הדרכה</TableHead>
+                <TableHead>שיעור התחיל</TableHead>
+                <TableHead>משך השיעור</TableHead>
+                <TableHead>תשובות נכונות</TableHead>
+                <TableHead>תשובות שגויות</TableHead>
+                <TableHead>מצב</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -486,11 +493,11 @@ export default function AdminDashboard() {
                     <span
                       className={cn(
                         "px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 w-fit",
-                        session.status === "Passed"
+                        session.status === "עבר"
                           ? "bg-primary/10 text-primary"
                           : "bg-destructive/10 text-destructive"
                       )}>
-                      {session.status === "Passed" ? (
+                      {session.status === "עבר" ? (
                         <CheckCheck className="w-3 h-3" />
                       ) : (
                         <AlertCircle className="w-3 h-3" />

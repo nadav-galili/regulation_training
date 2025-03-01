@@ -68,7 +68,7 @@ export default function AdminLogin() {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="identifier">Employee Identifier</Label>
+              <Label htmlFor="identifier">שם משתמש</Label>
               <Input
                 id="identifier"
                 placeholder="Enter your identifier"
@@ -78,7 +78,7 @@ export default function AdminLogin() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">סיסמה</Label>
               <Input
                 id="password"
                 type="password"
@@ -96,6 +96,9 @@ export default function AdminLogin() {
             </Button>
           </form>
         </CardContent>
+        <p className="text-xl mt-4 text-gray-500">
+          משתמש לדוגמה - שם משתמש:1234 סיסמה:1234
+        </p>
       </Card>
     </div>
   );

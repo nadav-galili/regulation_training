@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AnimatedGradientDemo } from "@/components/ui/code-demo";
 import Link from "next/link";
-import { UserCircle2, ShieldCheck, ArrowRight } from "lucide-react";
+import { UserCircle2, ShieldCheck, ArrowLeft } from "lucide-react";
 import { TypewriterEffectSmooth } from "@/components/ui/typewriter-effect";
 import { motion } from "framer-motion";
 
@@ -20,9 +20,9 @@ export default function Home() {
           <div className="text-center space-y-8 max-w-3xl mx-auto">
             <TypewriterEffectSmooth
               words={[
-                { text: "Regulation" },
-                { text: "Training" },
-                { text: "Portal", className: "text-primary" },
+                { text: "פורטל", className: "text-primary" },
+                { text: "הדרכות" },
+                { text: "רגולציה" },
               ]}
               className="justify-center"
               cursorClassName="bg-primary"
@@ -32,8 +32,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 3, duration: 0.8 }}
               className="text-muted-foreground text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed">
-              Complete your required regulatory training and track your progress
-              through our interactive learning platform
+              השלם את ההדרכות הרגולטוריות שלך ועקוב אחר התהליך בפורטל ההדרכות
             </motion.p>
           </div>
         </div>
@@ -56,20 +55,19 @@ export default function Home() {
                 <div className="flex items-center gap-2 mb-4">
                   <UserCircle2 className="w-6 h-6 text-primary" />
                   <h2 className="text-2xl font-semibold text-primary">
-                    Employee Portal
+                    פורטל המשתמשים
                   </h2>
                 </div>
                 <p className="text-muted-foreground">
-                  Access your assigned training videos and complete regulatory
-                  requirements
+                  גישה להדרכות המוקצות לך והשלמת הדרכות
                 </p>
               </div>
               <Link href="/employee/login" className="block">
                 <Button
                   size="lg"
                   className="w-full transition-all group-hover:scale-[1.02] gap-2">
-                  Employee Login
-                  <ArrowRight className="w-4 h-4" />
+                  התחברות לפורטל
+                  <ArrowLeft className="w-4 h-4" />
                 </Button>
               </Link>
             </div>
@@ -82,12 +80,11 @@ export default function Home() {
                 <div className="flex items-center gap-2 mb-4">
                   <ShieldCheck className="w-6 h-6 text-primary" />
                   <h2 className="text-2xl font-semibold text-primary">
-                    Admin Dashboard
+                    פורטל המנהלים
                   </h2>
                 </div>
                 <p className="text-muted-foreground">
-                  Monitor training progress and review employee performance
-                  metrics
+                  עקוב אחר התהליך והגבלת הדרכות של המשתמשים
                 </p>
               </div>
               <Link href="/admin/login" className="block">
@@ -95,8 +92,8 @@ export default function Home() {
                   size="lg"
                   variant="outline"
                   className="w-full transition-all group-hover:scale-[1.02] gap-2 hover:bg-primary hover:text-primary-foreground">
-                  Admin Dashboard
-                  <ArrowRight className="w-4 h-4" />
+                  פורטל המנהלים
+                  <ArrowLeft className="w-4 h-4" />
                 </Button>
               </Link>
             </div>

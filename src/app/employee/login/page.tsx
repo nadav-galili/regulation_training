@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import Link from "next/link";
+import { Home } from "lucide-react";
 
 export default function EmployeeLogin() {
   const [employeeId, setEmployeeId] = useState("");
@@ -51,6 +53,14 @@ export default function EmployeeLogin() {
           Login
         </Button>
       </form>
+
+      <p className="text-xl mt-4 text-gray-500">משתמש לדוגמה : 4567</p>
+      <Link href="/">
+        <Button variant="outline">
+          <Home className="w-4 h-4" />
+          דף הבית
+        </Button>
+      </Link>
     </div>
   );
 }
